@@ -26,7 +26,7 @@ namespace ProEventos.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
+            //Configuração MVC
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
@@ -49,6 +49,8 @@ namespace ProEventos.API
             app.UseRouting();
 
             app.UseAuthorization();
+
+            //Mapeamento de rotas
 
             app.UseEndpoints(endpoints =>
             {
