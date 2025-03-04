@@ -33,7 +33,7 @@ namespace ProEventos.Persistence.Persist
             return await query.ToArrayAsync();
         }
 
-        public async Task<Palestrante[]> GetAllPalestrantesByNomeAsync(string tema, bool includeEventos)
+        public async Task<Palestrante[]> GetAllPalestrantesByNomeAsync(string nome, bool includeEventos)
         {
             IQueryable<Palestrante> query = _context.Palestrantes
               .Include(p => p.RedeSociais);
@@ -46,7 +46,7 @@ namespace ProEventos.Persistence.Persist
             }
 
             query = query.AsNoTracking().OrderBy(p => p.Id)
-                .Where(p => p.Nome.ToLower().Contains(tema.ToLower()));
+                .Where(p => p.User.PrimeiroNome.ToLower().Contains(nome.ToLower()) || p.User.UltimoNome.ToLower().Contains(nome.ToLower()));
 
             return await query.ToArrayAsync();
         }
