@@ -12,6 +12,8 @@ using ProEventos.Persistence.Contratos;
 using ProEventos.Persistence.Persist;
 using AutoMapper;
 using System;
+using Microsoft.Extensions.FileProviders;
+using System.IO;
 
 namespace ProEventos.API
 {
@@ -70,6 +72,11 @@ namespace ProEventos.API
             app.UseCors(x => x.AllowAnyHeader()
                               .AllowAnyMethod()
                               .AllowAnyOrigin());
+
+            app.UseStaticFiles(new StaticFileOptions() { 
+                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "Resources")),
+                RequestPath = new Microsoft.AspNetCore.Http.PathString("/Resources")
+            });
             //Mapeamento de rotas
 
             app.UseEndpoints(endpoints =>
