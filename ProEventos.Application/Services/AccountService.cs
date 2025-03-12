@@ -45,7 +45,7 @@ namespace ProEventos.Application.Services
             }
         }
 
-        public async Task<UserDto> CreateAccountAsync(UserDto userDto)
+        public async Task<UserUpdateDto> CreateAccountAsync(UserDto userDto)
         {
             try
             {
@@ -54,7 +54,7 @@ namespace ProEventos.Application.Services
 
                 if (result.Succeeded)
                 {
-                    var userToReturn = _mapper.Map<UserDto>(user);
+                    var userToReturn = _mapper.Map<UserUpdateDto>(user);
 
                     return userToReturn;
                 }
@@ -91,14 +91,19 @@ namespace ProEventos.Application.Services
                 var user = await _userPersist.GetUserByUserNameAsync(userUpdateDto.UserName);
                 if (user == null) return null;
 
+                userUpdateDto.Id = user.Id;
+
                 _mapper.Map(userUpdateDto, user);
 
-                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-                var result = await _userManager.ResetPasswordAsync(user, token, userUpdateDto.Password);
+                if (userUpdateDto.Password != null)
+                {
+                    var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                    await _userManager.ResetPasswordAsync(user, token, userUpdateDto.Password);
+                }
 
                 _userPersist.Update<User>(user);
 
-                if(await _userPersist.SaveChangesAsync())
+                if (await _userPersist.SaveChangesAsync())
                 {
                     var userRetorno = await _userPersist.GetUserByUserNameAsync(user.UserName);
 
@@ -107,12 +112,12 @@ namespace ProEventos.Application.Services
 
                 return null;
             }
-            catch (Exception ex)
+            catch (System.Exception ex)
             {
-
-                throw new Exception($"Erro ao tentar atualizar o usuário. {ex.Message}");
+                throw new Exception($"Erro ao tentar atualizar usuário. Erro: {ex.Message}");
             }
         }
+
 
         public async Task<bool> UserExists(string userName)
         {
