@@ -48,12 +48,17 @@ namespace ProEventos.API.Controllers
         {
             try
             {
-                if (await _accountService.UserExists(userDto.Username)) return BadRequest("Usuário já existe.");
+                if (await _accountService.UserExists(userDto.UserName)) return BadRequest("Usuário já existe.");
 
                 var user = await _accountService.CreateAccountAsync(userDto);
 
                 if (user != null)
-                    return Ok(user);
+                    return Ok(new
+                    {
+                        userName = user.UserName,
+                        PrimeiroNome = user.PrimeiroNome,
+                        token = _tokenService.CreateToken(user).Result
+                    });
 
 
                 return BadRequest("Usuário não criado, tente novamente mais tarde!");
@@ -82,7 +87,7 @@ namespace ProEventos.API.Controllers
                 {
                     userName = user.UserName,
                     PrimeiroNome = user.PrimeiroNome,
-                    token = await _tokenService.CreateToken(user)
+                    token = _tokenService.CreateToken(user).Result
                 });
             }
             catch (Exception ex)
@@ -94,20 +99,27 @@ namespace ProEventos.API.Controllers
         }
 
         [HttpPut("UpdateUser")]
-        [AllowAnonymous]
-        public async Task<IActionResult> UpdateUser(UserUpdateDto userDto)
+        public async Task<IActionResult> UpdateUser(UserUpdateDto userUpdateDto)
         {
             try
             {
+                if (userUpdateDto.UserName != User.GetUserName())
+                    return Unauthorized("Usuário Inválido");
+
                 var user = await _accountService.GetUserByUserNameAsync(User.GetUserName());
                 if (user == null) return Unauthorized("Usuário inválido.");
-
-                var userRetorno = await _accountService.UpdateAccount(userDto);
+                
+                var userRetorno = await _accountService.UpdateAccount(userUpdateDto);
 
                 if (userRetorno == null)
                     return NoContent();
 
-                return Ok(userRetorno);
+                return Ok(new
+                {
+                    userName = userRetorno.UserName,
+                    PrimeiroNome = userRetorno.PrimeiroNome,
+                    token = _tokenService.CreateToken(userRetorno).Result
+                });
             }
             catch (Exception ex)
             {
